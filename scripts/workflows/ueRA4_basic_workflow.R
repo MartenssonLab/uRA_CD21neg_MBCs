@@ -115,21 +115,36 @@ ueRA4 = AddMetaData(ueRA4, metadata = predictions) # Add predictions as metadata
 
 Idents(ueRA4) = ueRA4$predicted.id
 Idents(ueRA4, cells = vdjdubs4$barcode) = "VDJdubs" # Indicate VDJ-seq data doublets
-ueRA4.1 = subset(ueRA4, idents = "B cell") # Only retain predicted B cells, and discard VDJ-seq doublets
+ueRA4 = subset(ueRA4, idents = "B cell") # Only retain predicted B cells, and discard VDJ-seq doublets
 
 #################################
 ###---Single-Cell Transform---###
 #################################
-ueRA4.1 = SCTransform(ueRA4.1, variable.features.n = dim(ueRA4)[1]) # Due to high homegenity in the data (all memory B cells), all genes are retained as variable features
+ueRA4 = SCTransform(ueRA4, variable.features.n = dim(ueRA4)[1]) # Due to high homegenity in the data (all memory B cells), all genes are retained as variable features
 
 #---Principal Component Analysis---#
-ueRA4.1 = RunPCA(ueRA4.1, features = VariableFeatures(ueRA4.1), assay = "SCT") # Perform PCA
+ueRA4 = RunPCA(ueRA4, features = VariableFeatures(ueRA4), assay = "SCT") # Perform PCA
 # ElbowPlot(ueRA4.1, reduction = "pca", ndims = 50)
 
 #---Unsupervised Clustering---#
-ueRA4.1 = FindNeighbors(ueRA4.1, dims = 1:35)
-ueRA4.1 = FindClusters(ueRA4.1, resolution = 0.35)
+ueRA4 = FindNeighbors(ueRA4, dims = 1:35)
+ueRA4 = FindClusters(ueRA4, resolution = 0.35)
 
 #---Running UMAP---#
-ueRA4.1 = RunUMAP(ueRA4.1, dims = 1:35)
-DimPlot(ueRA4.1, label = TRUE, pt.size = 2, label.size = 7)
+ueRA4 = RunUMAP(ueRA4, dims = 1:35)
+DimPlot(ueRA4, label = TRUE, pt.size = 2, label.size = 7)
+
+##########################################
+###---Differentially Expressed Genes---###
+##########################################
+
+ueRA4.marks = subset(FindAllMarkers(ueRA4, only.pos = FALSE, min.pct = 0.25),
+	subset = p_val_adj < 0.05) # Identify DEGs and retain only significant DEGs 
+pos.marks = subset(ueRA4.marks, subset = avg_log2FC > 0.0) # Filter out upregulated DEGs
+neg.marks = subset(ueRA4.marks, subset = avg_log2FC < 0.0) # Filter out downregulated DEGs
+
+write.xlsx(pos.marks, "reports/ueRA4_DEGs.xlsx", sheetName = "Upregulated", col.names = TRUE, row.names = FALSE)
+write.xlsx(neg.marks, "reports/ueRA4_DEGs.xlsx", sheetName = "Downregulated", col.names = TRUE, row.names = FALSE, append = TRUE)
+
+#---Save Seurat Object---#
+saveRDS(ueRA4, file = "data/ueRA4_base")
