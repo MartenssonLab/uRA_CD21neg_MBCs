@@ -27,7 +27,6 @@ DoHeatmap(ueRA4, features = degs$gene, raster = FALSE,
 	group.colors = c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#F564E3")) # Plot significant upregulated DEGs
 
 #---Pie Chart---#
-
 # Identify number of significantly upregulated DEGs by cluster
 for (i in levels(ueRA4)) {
   d = nrow(subset(degs, subset = cluster == i))
