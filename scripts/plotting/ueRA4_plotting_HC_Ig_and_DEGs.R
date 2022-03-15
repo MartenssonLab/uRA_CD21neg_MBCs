@@ -85,7 +85,7 @@ igm = WhichCells(ueRA4, expression = Isotype == "IGHM") # Cells expressing IgM
 igg = c(WhichCells(ueRA4, expression = Isotype == "IGHG1"), 
 	WhichCells(ueRA4, expression = Isotype == "IGHG2"), 
 	WhichCells(ueRA4, expression = Isotype == "IGHG3"), 
-	WhichCells(ueRA4, expression = Isotype == "IGHG4"))
+	WhichCells(ueRA4, expression = Isotype == "IGHG4")) # Cells expressing IgG
 
 iga = c(WhichCells(ueRA4, expression = Isotype == "IGHA1"), 
 	WhichCells(ueRA4, expression = Isotype == "IGHA2")) # Cells expressing IgA
