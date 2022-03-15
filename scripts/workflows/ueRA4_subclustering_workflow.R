@@ -49,16 +49,18 @@ write.xlsx(neg.marks %>% group_by(cluster) %>% top_n(-10, p_val_adj), )
 #########################################
 ###---Map Sub-Clusters to Base Data---###
 #########################################
-
-Idents(ueRA4, cells = c3.0) = "3.0"
-Idents(ueRA4, cells = c3.1) = "3.1"
-Idents(ueRA4, cells = c3.2) = "3.2"
-Idents(ueRA4) = factor(Idetns(ueRA4), levels = c("0", "1", "2", "3.0", "3.1", "3.2", "4")
+ueRA4.1 = ueRA4
+Idents(ueRA4.1, cells = c3.0) = "3.0"
+Idents(ueRA4.1, cells = c3.1) = "3.1"
+Idents(ueRA4.1, cells = c3.2) = "3.2"
+Idents(ueRA4.1) = factor(Idetns(ueRA4.1), levels = c("0", "1", "2", "3.0", "3.1", "3.2", "4")
 
 ###############################
 ###---Cluster 3.1 Vs. 3.0---###
 ###############################
 
-marks = subset(FindMarkers(ueRA4, ident.1 = "3.1", ident.2 = "3.0", min.pct = 0.25, only.pos = TRUE), 
+marks = subset(FindMarkers(ueRA4.1, ident.1 = "3.1", ident.2 = "3.0", min.pct = 0.25, only.pos = TRUE), 
 	subset = p_val_adj <0.05)
 write.xlsx(marks, file = "reports/ueRA4_3.1_vs_3.0_DEGs.xlsx", sheetName = "DEGs", col.names = TRUE, row.names = TRUE)
+
+saveRDS(ueRA4.1, file = "data/ueRA4_w_subs")
