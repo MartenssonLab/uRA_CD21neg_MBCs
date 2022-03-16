@@ -19,7 +19,7 @@ table(Idents(ueRA4)) # Number of cells per cluster
 
 slices = c(889, 827, 713, 443, 37)
 pie(slices, labels = NA, col = c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#F564E3"), 
-	clockwise = TRUE, main = "number of cells per cluster", cex = 3)
+	clockwise = TRUE, main = "number of cells per cluster")
 
 draw.circle(0, 0, 0.35, col = "white")
 text(x = 0, y = 0, "2 909", cex = 2)
