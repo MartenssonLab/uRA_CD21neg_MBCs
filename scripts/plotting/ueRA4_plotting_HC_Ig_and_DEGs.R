@@ -52,8 +52,10 @@ ggtree(myphytree) +
 ##########################################
 
 degs = read.xlsx("data/ueRA4_DEGs.xlsx", sheetName = "Upregulated", col.names = TRUE, row.names = FALSE) # Read in DEGs
+
 DoHeatmap(ueRA4, features = degs$gene, raster = FALSE, 
-	group.colors = c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#F564E3")) # Plot significant upregulated DEGs
+	group.colors = c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#F564E3")) + 
+	theme(axis.text.y = element_blank())
 
 #---Pie Chart---#
 # Identify number of significantly upregulated DEGs by cluster
