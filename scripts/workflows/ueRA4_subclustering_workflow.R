@@ -42,18 +42,22 @@ pos.marks = subset(ueRA4.3.marks, subset = avg_log2FC > 0.0)
 neg.marks = subset(ueRA4.3.marks, subset = avg_log2FC < 0.0)
 
 write.xlsx(pos.marks %>% group_by(cluster) %>% top_n(-10, p_val_adj), 
-	"reports/ueRA4_C3_subs.xlsx", sheetName = "Top10_Up", col.names = TRUE, row.names = TRUE)
+	"reports/ueRA4_C3_subs.xlsx", sheetName = "Top10_Up", col.names = TRUE, row.names = FALSE)
 write.xlsx(neg.marks %>% group_by(cluster) %>% top_n(-10, p_val_adj), )
-	"reports/ueRA4_C3_subs.xlsx", sheetName = "Top10_Down", col.names = TRUE, row.names = TRUE, append = TRUE)
+	"reports/ueRA4_C3_subs.xlsx", sheetName = "Top10_Down", col.names = TRUE, row.names = FALSE, append = TRUE)
+
+saveRDS(ueRA4.3, file = "data/ueRA4_C3_subs") # Save sub-cluster object
 
 #########################################
 ###---Map Sub-Clusters to Base Data---###
 #########################################
+
 ueRA4.1 = ueRA4
 Idents(ueRA4.1, cells = c3.0) = "3.0"
 Idents(ueRA4.1, cells = c3.1) = "3.1"
 Idents(ueRA4.1, cells = c3.2) = "3.2"
-Idents(ueRA4.1) = factor(Idetns(ueRA4.1), levels = c("0", "1", "2", "3.0", "3.1", "3.2", "4")
+Idents(ueRA4.1) = factor(Idetns(ueRA4.1), 
+	levels = c("0", "1", "2", "3.0", "3.1", "3.2", "4")
 
 ###############################
 ###---Cluster 3.1 Vs. 3.0---###
@@ -63,4 +67,4 @@ marks = subset(FindMarkers(ueRA4.1, ident.1 = "3.1", ident.2 = "3.0", min.pct = 
 	subset = p_val_adj <0.05)
 write.xlsx(marks, file = "reports/ueRA4_3.1_vs_3.0_DEGs.xlsx", sheetName = "DEGs", col.names = TRUE, row.names = TRUE)
 
-saveRDS(ueRA4.1, file = "data/ueRA4_w_subs")
+saveRDS(ueRA4.1, file = "data/ueRA4_w_subs") # Save Seurat object
