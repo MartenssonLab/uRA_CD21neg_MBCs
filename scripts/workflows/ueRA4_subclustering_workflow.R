@@ -65,6 +65,6 @@ Idents(ueRA4.1) = factor(Idetns(ueRA4.1),
 
 marks = subset(FindMarkers(ueRA4.1, ident.1 = "3.1", ident.2 = "3.0", min.pct = 0.25, only.pos = TRUE), 
 	subset = p_val_adj <0.05)
-write.xlsx(marks, file = "reports/ueRA4_3.1_vs_3.0_DEGs.xlsx", sheetName = "DEGs", col.names = TRUE, row.names = TRUE)
+write.xlsx(marks, file = "reports/ueRA4_3.1_vs_3.0_DEGs.xlsx", sheetName = "DEGs", col.names = TRUE, row.names = FALSE)
 
 saveRDS(ueRA4.1, file = "data/ueRA4_w_subs") # Save Seurat object
