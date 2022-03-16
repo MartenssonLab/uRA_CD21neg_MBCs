@@ -18,12 +18,16 @@ DoHeatmap(ueRA4, features = genes, raster = FALSE,
 
 #---Density Plots---#
 for(i in 1:14){
-  p = plot_density(ra2.1, features = genes[i], reduction = "umap") 
+  p = plot_density(ueRA4, features = genes[i], reduction = "umap") 
   assign(paste0("p", i), p)
 } # Make density plots
 
 grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, p9, 
              p10, p11, p12, p13, p14, ncol = 7)
+
+## Combined positive markers
+plot_density(ueRA4, features = c("TBX21", "ITGAX", "FCRL5", "FCRL3", "FAS", "CD19", "MS4A1"),
+	reduction = "umap", joint = TRUE, combine = FALSE, size = 2)[8] # Plot combined density
 
 #---Feature Plots---#
 cd21 = WhichCells(ueRA4, expression = CR2 > 0)) # Extract cells expressing CD21
