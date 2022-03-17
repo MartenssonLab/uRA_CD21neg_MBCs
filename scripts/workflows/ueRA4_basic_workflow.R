@@ -105,6 +105,7 @@ reference = reference %>%
 transfer.anchors = FindTransferAnchors(reference = reference, query = ueRA4, dims = 1:25) # Identify transfer anchors
 predictions = TransferData(anchorset = transfer.anchors, refdata = reference$cell_type, dims = 1:25) # Transfer predictions
 ueRA4 = AddMetaData(ueRA4, metadata = predictions) # Add predictions as metadata
+
 # DimPlot(ueRA4, group.by = "predicted.id", label = TRUE, repel = TRUE) +
 #	ggtitle("Predicted Cell Types") + 
 #	theme(plot.title = element_text(hjust = 0.5)) # Plot predicted 
@@ -120,11 +121,12 @@ ueRA4 = subset(ueRA4, idents = "B cell") # Only retain predicted B cells, and di
 #################################
 ###---Single-Cell Transform---###
 #################################
+
 ueRA4 = SCTransform(ueRA4, variable.features.n = dim(ueRA4)[1]) # Due to high homegenity in the data (all memory B cells), all genes are retained as variable features
 
 #---Principal Component Analysis---#
 ueRA4 = RunPCA(ueRA4, features = VariableFeatures(ueRA4), assay = "SCT") # Perform PCA
-# ElbowPlot(ueRA4.1, reduction = "pca", ndims = 50)
+# ElbowPlot(ueRA4, reduction = "pca", ndims = 50)
 
 #---Unsupervised Clustering---#
 ueRA4 = FindNeighbors(ueRA4, dims = 1:35)
