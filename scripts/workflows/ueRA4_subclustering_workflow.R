@@ -56,7 +56,7 @@ ueRA4.1 = ueRA4
 Idents(ueRA4.1, cells = c3.0) = "3.0"
 Idents(ueRA4.1, cells = c3.1) = "3.1"
 Idents(ueRA4.1, cells = c3.2) = "3.2"
-Idents(ueRA4.1) = factor(Idetns(ueRA4.1), 
+Idents(ueRA4.1) = factor(Idents(ueRA4.1), 
 	levels = c("0", "1", "2", "3.0", "3.1", "3.2", "4")
 
 ###############################
