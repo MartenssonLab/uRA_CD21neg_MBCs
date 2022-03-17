@@ -26,10 +26,9 @@ ueRA1.3 = RunUMAP(ueRA1.3, dims = 1:40)
 #---Rename Clusters Accordingly---#
 c3.0 = WhichCells(ueRA1.3, idents = "0")
 c3.1 = WhichCells(ueRA1.3, idents = "1")
-c3.2 = WhichCells(ueRA1.3, idents = "2")
 
-Idents(ueRA4.3, cells = c3.0) = "3.0"
-Idents(ueRA4.3, cells = c3.1) = "3.1"
+Idents(ueRA1.3, cells = c3.0) = "3.0"
+Idents(ueRA1.3, cells = c3.1) = "3.1"
 
 ########################################
 ###---Differential Gene Expression---###
