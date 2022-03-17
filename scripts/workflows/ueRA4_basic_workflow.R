@@ -20,7 +20,7 @@ vdj4 = read.csv("data/VDJ_data/ueRA4/ueRA4_filtered_contig_annotations.csv, sep 
 
 vdjdubs4 = vdj4[(duplicated(vdj4$barcode) | duplicated(vdj4$barcode, fromLast = TRUE)),] # Save duplicated barcodes
 vdj4 = vdj4[!(duplicated(vdj4$barcode) | duplicated(vdj4$barcode, fromLast = TRUE)),] # Remove cells with reoccurring barcodes (duplicates)
-vdj4 = vdj[!(vdj4$c_gene == ""),] # Remove cells with no annotated C gene
+vdj4 = vdj4[!(vdj4$c_gene == ""),] # Remove cells with no annotated C gene
 
 vdj4 = vdj4[,c("barcode", "c_gene", "reads", "umis")] # Trim the contents for relevance
 names(vdj4)[names(vdj4) == "c_gene"] = "Isotype" # Rename for simplicity
