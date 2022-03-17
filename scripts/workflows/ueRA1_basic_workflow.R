@@ -125,7 +125,7 @@ ueRA1 = SCTransform(object = ueRA1, variable.features.n = dim(ueRA1)[1]) # Due t
 
 #---Principal Component Analysis---#
 ueRA1 = RunPCA(object = ueRA1, features = VariableFeatures(object = ueRA1), assay = "SCT")
-# ElbowPlotueRA1, reduction = "pca", ndims = 50)
+# ElbowPlot(ueRA1, reduction = "pca", ndims = 50)
 
 #---Unsupervised Clustering---#
 ueRA1 = FindNeighbors(object = ueRA1, dims = 1:35)
