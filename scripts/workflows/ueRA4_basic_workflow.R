@@ -18,12 +18,12 @@ vdj4 = read.csv("data/VDJ_data/ueRA4/ueRA4_filtered_contig_annotations.csv, sep 
 	filter(productive == "true", chain == "IGH", is_cell == "true") # Only retain productive heavy chains in confirmed cells
 
 
-vdjdubs4 = vdj4[(duplicated(vdj$barcode) | duplicated(vdj4$barcode, fromLast = TRUE)),] # Save duplicated barcodes
-vdj4 = vdj4[!(duplicated(vdj$barcode) | duplicated(vdj$barcode, fromLast = TRUE)),] # Remove cells with reoccurring barcodes (duplicates)
-vdj4 = vdj[!(vdj$c_gene == ""),] # Remove cells with no annotated C gene
+vdjdubs4 = vdj4[(duplicated(vdj4$barcode) | duplicated(vdj4$barcode, fromLast = TRUE)),] # Save duplicated barcodes
+vdj4 = vdj4[!(duplicated(vdj4$barcode) | duplicated(vdj4$barcode, fromLast = TRUE)),] # Remove cells with reoccurring barcodes (duplicates)
+vdj4 = vdj[!(vdj4$c_gene == ""),] # Remove cells with no annotated C gene
 
 vdj4 = vdj4[,c("barcode", "c_gene", "reads", "umis")] # Trim the contents for relevance
-names(vdj4)[names(vdj) == "c_gene"] = "Isotype" # Rename for simplicity
+names(vdj4)[names(vdj4) == "c_gene"] = "Isotype" # Rename for simplicity
 rownames(vdj4) = vdj4[,1] # Set barcodes as rownames
 ueRA4 = AddMetaData(ueRA4, metadata = vdj4) # Add IgH isotype data to SEurat object
 
