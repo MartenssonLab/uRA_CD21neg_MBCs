@@ -53,7 +53,7 @@ saveRDS(ueRA1.3, file = "data/ueRA1_C3_subs") # Save sub-cluster object
 ueRA1.1 = ueRA1
 Idents(ueRA1.1, cells = c3.0) = "3.0"
 Idents(ueRA1.1, cells = c3.1) = "3.1"
-Idents(ueRA1.1) = factor(Idetns(ueRA1.1), 
+Idents(ueRA1.1) = factor(Idents(ueRA1.1), 
 	levels = c("0", "1", "2", "3.0", "3.1", "4", "5")
 
 saveRDS(ueRA1.1, file = "data/ueRA1_w_subs") # Save Seurat object
