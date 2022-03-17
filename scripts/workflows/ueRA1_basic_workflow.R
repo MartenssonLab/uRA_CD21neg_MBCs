@@ -75,7 +75,7 @@ annotations = ueRA1@meta.data$seurat_clusters # Define clusters
 homotypic.prop = modelHomotypic(annotations) # Model homotypic proportions
 nExp = round(ncol(ueRA1)* 0.031) # Expect 3.1% doublets for 4 000 cells
 nExp_adj = round(nExp*(1-homotypic.prop)) # Adjust expectations
-ra1 = doubletFinder_v3(ueRA1, pN = 0.25, pK = 0.09, nExp = nExp, PCs = 1:25) # Perform doublet prediction
+ueRA1 = doubletFinder_v3(ueRA1, pN = 0.25, pK = 0.09, nExp = nExp, PCs = 1:25) # Perform doublet prediction
 DF.name = colnames(ueRA1@meta.data)[grepl("DF.classification", colnames(ueRA1@meta.data))]
 
 # DimPlot(ueRA1, group.by = DF.name) + ggtitle("Predicted Doublets") + theme(plot.title = element_text(hjust = 0.5)) # Plot predicted doublets
