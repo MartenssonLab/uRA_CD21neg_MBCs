@@ -17,7 +17,7 @@ DoHeatmap(ueRA4, features = genes, raster = FALSE,
 	group.colors = c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#F564E3"))
 
 #---Density Plots---#
-for(i in 1:14){
+for(i in seq(genes)){
   p = plot_density(ueRA4, features = genes[i], reduction = "umap") 
   assign(paste0("p", i), p)
 } # Make density plots
