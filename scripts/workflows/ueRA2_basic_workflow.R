@@ -11,7 +11,7 @@ library(xlsx)
 set.seed(1001)
 
 #---Gene Expression Data---#
-ueRA2.data = Read10X("Rdata/gene_expression/ueRA2") # Read in CellRanger output files
+ueRA2.data = Read10X("data/gene_expression/ueRA2") # Read in CellRanger output files
 ueRA2 = CreateSeuratObject(counts = ueRA2.data, project = "ueRA2", min.cells = 3, min.features = 200) # Create Seurat object
 
 #---VDJ-Seq-Data---#
