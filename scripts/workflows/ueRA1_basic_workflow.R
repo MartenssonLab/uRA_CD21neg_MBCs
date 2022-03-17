@@ -50,7 +50,7 @@ ueRA1 = FindVariableFeatures(ueRA1, selection.method = "vst") # Identify highly 
 ueRA1 = ueRA1[!grepl("^IG[HKL][VDJ]|^IGH[A][1-2]|^IGH[G][1-4]|^IGHD$|^IGHM$|^IGHE$|^IGKC$|^IGLC[1-7]|^AC233755.1$", rownames(ueRA1)),] # See Sundell et al. (2022) for details. 
 
 #---Scaling Data---#
-ueRA1 = ScaleData(ueRA1, features = rownames(ueRA4))
+ueRA1 = ScaleData(ueRA1, features = rownames(ueRA1))
 
 ###################################################
 ###---Dimensionality Reduction and Clustering---###
