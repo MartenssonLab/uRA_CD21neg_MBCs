@@ -9,24 +9,8 @@ library(xlsx)
 ###---Read in Data---###
 ########################
 set.seed(1001)
-
-#---Gene Expression Data---#
 ueRA4.data = Read10X("data/gene_expression/ueRA4")
 ueRA4 = CreateSeuratObject(counts = ueRA4.data, project = "ueRA4", min.cells = 3, min.features = 200)
-
-#---VDJ-Seq Data---#
-vdj4 = read.csv("data/VDJ_data/ueRA4/ueRA4_filtered_contig_annotations.csv, sep = ",") %>%
-	filter(productive == "true", chain == "IGH", is_cell == "true") # Only retain productive heavy chains in confirmed cells
-
-
-vdjdubs4 = vdj4[(duplicated(vdj4$barcode) | duplicated(vdj4$barcode, fromLast = TRUE)),] # Save duplicated barcodes
-vdj4 = vdj4[!(duplicated(vdj4$barcode) | duplicated(vdj4$barcode, fromLast = TRUE)),] # Remove cells with reoccurring barcodes (duplicates)
-vdj4 = vdj4[!(vdj4$c_gene == ""),] # Remove cells with no annotated C gene
-
-vdj4 = vdj4[,c("barcode", "c_gene", "reads", "umis")] # Trim the contents for relevance
-names(vdj4)[names(vdj4) == "c_gene"] = "Isotype" # Rename for simplicity
-rownames(vdj4) = vdj4[,1] # Set barcodes as rownames
-ueRA4 = AddMetaData(ueRA4, metadata = vdj4) # Add IgH isotype data to SEurat object
 
 ###########################
 ###---Quality Control---###
@@ -116,6 +100,7 @@ ueRA4 = AddMetaData(ueRA4, metadata = predictions) # Add predictions as metadata
 ###################################
 
 Idents(ueRA4) = ueRA4$predicted.id
+vdj_doublets = read.table("data/VDJ_data/ueRA4_VDJ-seq_doublets.txt", header = FALSE, row.names = NULL) # Read in list of VDJ-seq doublets
 Idents(ueRA4, cells = vdjdubs4$barcode) = "VDJdubs" # Indicate VDJ-seq data doublets
 ueRA4 = subset(ueRA4, idents = "B cell") # Only retain predicted B cells, and discard VDJ-seq doublets
 
@@ -146,8 +131,8 @@ ueRA4.marks = subset(FindAllMarkers(ueRA4, only.pos = FALSE, min.pct = 0.25),
 pos.marks = subset(ueRA4.marks, subset = avg_log2FC > 0.0) # Filter out upregulated DEGs
 neg.marks = subset(ueRA4.marks, subset = avg_log2FC < 0.0) # Filter out downregulated DEGs
 
-write.xlsx(pos.marks, "reports/ueRA4_DEGs.xlsx", sheetName = "Upregulated", col.names = TRUE, row.names = FALSE)
-write.xlsx(neg.marks, "reports/ueRA4_DEGs.xlsx", sheetName = "Downregulated", col.names = TRUE, row.names = FALSE, append = TRUE)
+write.xlsx(pos.marks, "data/ueRA4_DEGs.xlsx", sheetName = "Upregulated", col.names = TRUE, row.names = FALSE)
+write.xlsx(neg.marks, "data/ueRA4_DEGs.xlsx", sheetName = "Downregulated", col.names = TRUE, row.names = FALSE, append = TRUE)
 
 #---Save Seurat Object---#
 saveRDS(ueRA4, file = "data/ueRA4_base")

@@ -9,23 +9,8 @@ library(xlsx)
 ###---Read in Data---###
 ########################
 set.seed(1001)
-
-#---Gene Expression Data---#
 ueRA3.data = Read10X("data/gene_expression/ueRA3") # Read in CellRanger output files
 ueRA3 = CreateSeuratObject(counts = ueRA3.data, project = "ueRA3", min.cells = 3, min.features = 200) # Create Seurat object
-
-#---VDJ-Seq-Data---#
-vdj3 = read.csv("data/VDJ_data/ueRA3_filtered_contig_annotations.csv, sep = ",") %>%
-	filter(productive == "true", chain == "IGH", is_cell == "true") # Only retain productive heavy chains in confirmed cells
-
-vdjdubs3 = vdj3[(duplicated(vdj3$barcode) | duplicated(vdj3$barcode, fromLast = TRUE)),] # Save duplicated barcodes
-vdj3 = vdj3[!(duplicated(vdj3$barcode) | duplicated(vdj3$barcode, fromLast = TRUE)),] # Remove cells with reoccurring barcodes (duplicates)
-vdj3 = vdj3[!(vdj3$c_gene == ""),] # Remove cells with no annotated C gene
-
-vdj3 = vdj3[,c("barcode", "c_gene", "reads", "umis")] # Trim the contents for relevance
-names(vdj3)[names(vdj3) == "c_gene"] = "Isotype" # Rename for simplicity
-rownames(vdj3) = vdj3[,1] # Set barcodes as rownames
-ueRA3 = AddMetaData(ueRA3, metadata = vdj3) # Add IgH isotype data to Seurat object
 
 ###########################
 ###---Quality Control---###
@@ -114,7 +99,8 @@ ueRA3 = AddMetaData(ueRA3, metadata = predictions) # Add predictions as metadata
 ###################################
 
 Idents(ueRA3) = ueRA3$predicted.id # Set predicted cell types as main identities
-Idents(object = ueRA3, cells = vdjdubs3$barcode) = "VDJDubs" # Indicate VDJ-seq data doublets
+vdj_doublets = read.table("data/VDJ_data/ueRA3_VDJ-seq_doublets.txt", header = FALSE, row.names = NULL) # Read in list of VDJ-seq doublets
+Idents(object = ueRA3, cells = vdj_doublets) = "VDJDubs" # Indicate VDJ-seq data doublets
 ueRA3 = subset(ueRA3, idents = "B cell") # Only retain predicted B cells, and discard VDJ-seq doublets
 
 #################################
@@ -145,8 +131,8 @@ ueRA3.marks = subset(FindAllMarkers(ueRA3, only.pos = FALSE, min.pct = 0.25),
 pos.marks = subset(ueRA3.marks, subset = avg_log2FC > 0.0) # Filter out upregulated DEGs
 neg.marks = subset(ueRA3.marks, subset = avg_log2FC < 0.0) # Filter out downregulated DEGs
 
-write.xlsx(pos.marks, "reports/ueRA3_DEGs.xlsx", sheetName = "Upregulated", col.names = TRUE, row.names = FALSE)
-write.xlsx(neg.marks, "reports/ueRA3_DEGs.xlsx", sheetName = "Downregulated", col.names = TRUE, row.names = FALSE, append = TRUE)
+write.xlsx(pos.marks, "data/ueRA3_DEGs.xlsx", sheetName = "Upregulated", col.names = TRUE, row.names = FALSE)
+write.xlsx(neg.marks, "data/ueRA3_DEGs.xlsx", sheetName = "Downregulated", col.names = TRUE, row.names = FALSE, append = TRUE)
 
 #---Save Seurat Object---#
 saveRDS(ueRA3, file = "data/ueRA3_base")
