@@ -1,3 +1,3 @@
 # Data Files
-The data files related to this project can be found elsewhere and, due to size, are not part of this repository. 
-The directories found here detail their structure and where files retrieved should be placed in order to run the analyses in the scripts. 
+This repository contains data files used for the analyses in the scripts. Data files pertaining to the gene expression sequencing can be found elsewhere, due to size, and are not part of this repository. The gene_expression directory details the structure and where files retrieved should be placed in order to run the analyses in the script. 
+The VDJ_data folder contains filtered data files from VDJ-seq relevant for the script analyses and plotting. 
