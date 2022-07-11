@@ -101,7 +101,7 @@ ueRA4 = AddMetaData(ueRA4, metadata = predictions) # Add predictions as metadata
 
 Idents(ueRA4) = ueRA4$predicted.id
 vdj_doublets = read.table("data/VDJ_data/ueRA4_VDJ-seq_doublets.txt", header = FALSE, row.names = NULL) # Read in list of VDJ-seq doublets
-Idents(ueRA4, cells = vdjdubs4$barcode) = "VDJdubs" # Indicate VDJ-seq data doublets
+Idents(ueRA4, cells = vdj_doublets) = "VDJdubs" # Indicate VDJ-seq data doublets
 ueRA4 = subset(ueRA4, idents = "B cell") # Only retain predicted B cells, and discard VDJ-seq doublets
 
 #################################
