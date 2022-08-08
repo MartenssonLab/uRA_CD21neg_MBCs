@@ -9,9 +9,9 @@ library(xlsx)
 ###---Basic Plots---###
 #######################
 
-ueRA1 = readRDS("data/ueRA1")
-ueRA2 = readRDS("data/ueRA2")
-ueRA3 = readRDS("data/ueRA3")
+ueRA1 = readRDS("data/ueRA1_base")
+ueRA2 = readRDS("data/ueRA2_base")
+ueRA3 = readRDS("data/ueRA3_base")
 
 DimPlot(ueRA1.1, label = TRUE, pt.size = 2, label.size = 7, 
 	cols = c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#F564E3", "#619CFF")) # Plot clusters
