@@ -77,31 +77,3 @@ text(x = -0.22, y = 0.5, "68", cex = 2.5, col = "black")
 mylab = c("0", "1", "2", "3", "4")
 myorder = matrix(c(1, 2, 3, 4, 5), nrow = 1, ncol = 5, byrow = F)
 legend(-0.9, 1.1, mylab[myorder], cex = 1.5, fill = c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#F564E3"), bty = "n", ncol = 5)
-
-###################################################
-###---Distribution of Immunoglobulin Isotypes---###
-###################################################
-
-igm = WhichCells(ueRA4, expression = Isotype == "IGHM") # Cells expressing IgM
-
-igg = c(WhichCells(ueRA4, expression = Isotype == "IGHG1"), 
-	WhichCells(ueRA4, expression = Isotype == "IGHG2"), 
-	WhichCells(ueRA4, expression = Isotype == "IGHG3"), 
-	WhichCells(ueRA4, expression = Isotype == "IGHG4")) # Cells expressing IgG
-
-iga = c(WhichCells(ueRA4, expression = Isotype == "IGHA1"), 
-	WhichCells(ueRA4, expression = Isotype == "IGHA2")) # Cells expressing IgA
-
-p1 = DimPlot(ueRA4, cells.highlight = igm, pt.size = 2, sizes.highlight = 2, order = TRUE, 
-	cols.highlight = "cornflowerblue") + ggtitle("IgM") + theme(plot.title = element_text(hjust = 0.5)) + 
-	NoLegend()
-
-p2 = DimPlot(ueRA4, cells.highlight = igg, pt.size = 2, sizes.highlight = 2, order = TRUE, 
-	cols.highlight = "brown4") + ggtitle("IgG") + theme(plot.title = element_text(hjust = 0.5)) + 
-	NoLegend()
-
-p3 = DimPlot(ueRA4, cells.highlight = iga, pt.size = 2, sizes.highlight = 2, order = TRUE, 
-	cols.highlight = "tan1") + ggtitle("IgA") + theme(plot.title = element_text(hjust = 0.5)) + 
-	NoLegend()
-
-grid.arrange(p1, p2, p3, nrow = 1)
