@@ -1,4 +1,4 @@
-library((Seurat)
+library(Seurat)
 library(dplyr)
 library(xlsx)
 
