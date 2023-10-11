@@ -1,5 +1,5 @@
 # ueRA_DNDP
-This repository is associated with the Cell Reports Medicine paper *An antigen processing and presenting gene signature in circulating and synovial Tbet+CD11c+ B cells suggests disease dependent functions* (Thorarinsdottir *et al*., 2022).
+This repository is associated with the manuscript *Professional antigen-presenting Tbet+CD11c+ B cells associate with joint destruction in early rheumatoid arthritis* (McGrath *et al*., 2023).
 
 Herein, the R code required to reproduce the analyses reported in the publication. The sequencing data can be found in ArrayExpress, in the form of FASTQ files, under the accession number [E-MTAB-11961](https://www.ebi.ac.uk/arrayexpress/experiments/e-mtab-11961) (gene expression data). The relevant VDJ-seq data can be found in the [data/VDJ_data](data/VDJ_data) directory. 
 
