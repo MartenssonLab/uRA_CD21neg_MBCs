@@ -6,17 +6,7 @@ library(gridExtra)
 
 # Read in and process data
 uRA4.1 = readRDS("data/uRA4_w_subs.rds")
-
-## Extract cluster information
 uRA4_traj = as.cell_data_set(uRA4.1) # Convert to cell dataset
-uRA4_traj = cluster_cells(uRA4_traj) # Create initial clustering
-plot_cells(uRA4_traj, show_trajectory_graph = F, cell_size = 0.75, 
-           color_cells_by = "cluster")
-
-colData(uRA4_full)
-fData(uRA4_traj) # Access row data table in monocle object
-rownames(fData(uRA4_traj))[1:10] # Genes
-fData(uRA4_traj)$gene_short_name = rownames(fData(uRA4_traj))
 
 # Extract cluster information from Seurat object
 recreate.partition = c(rep(1, length(uRA4_traj@colData@rownames)))
