@@ -7,42 +7,42 @@ library(xlsx)
 ###---Distribution of Immunoglobulin Isotypes---###
 ###################################################
 
-ueRA4.1 = readRDS("data/ueRA4_w_subs") # read in subclustered data
+uRA4.1 = readRDS("data/uRA4_w_subs") # read in subclustered data
 
-igh = read.xlsx("data/VDJ_data/ueRA4_VDJ-seq_data.xlsx") # read in relevant VDJ-seq/IgH data for cluster 3.1
+igh = read.xlsx("data/VDJ_data/uRA4_VDJ-seq_data.xlsx") # read in relevant VDJ-seq/IgH data for cluster 3.1
 igh$cluster = forcats::as_factor(igh$cluster) # convert to factor
 
 rownames(igh) = igh(1) # set barcodes as rownames
 isotypes = igh[,"c_gene"] # Extract only isotypes
 
-ueRA4.1 = AddMetaData(ueRA4.1, metadata = igh) # Add isotypes as metadata
+uRA4.1 = AddMetaData(uRA4.1, metadata = igh) # Add isotypes as metadata
 
 #---Examine Distribution of Isotypes---#
 
-igm = WhichCells(object = ueRA4.1, expression = c_gene == "IGHM")
+igm = WhichCells(object = uRA4.1, expression = c_gene == "IGHM")
 
-igg = c(WhichCells(object = ueRA4.1, expression = c_gene == "IGHG1"), 
-	WhichCells(object = ueRA4.1, expression = c_gene == "IGHG2"), 
-	WhichCells(object = ueRA4.1, expression = c_gene == "IGHG3")) 
+igg = c(WhichCells(object = uRA4.1, expression = c_gene == "IGHG1"), 
+	WhichCells(object = uRA4.1, expression = c_gene == "IGHG2"), 
+	WhichCells(object = uRA4.1, expression = c_gene == "IGHG3")) 
 
 ## NOTE: no cells in cluster 3.1 express IgG4
 
-iga = c(WhichCells(object = ueRA4.1, expression = c_gene == "IGHA1"), 
-	WhichCells(object = ueRA4.1, expression = c_gene == "IGHA2"))
+iga = c(WhichCells(object = uRA4.1, expression = c_gene == "IGHA1"), 
+	WhichCells(object = uRA4.1, expression = c_gene == "IGHA2"))
 
-p1 = DimPlot(ueRa4.1, cells.highlight = igm, cols.highlight = "cornflowerblue", label = TRUE, 
+p1 = DimPlot(uRA4.1, cells.highlight = igm, cols.highlight = "cornflowerblue", label = TRUE, 
 	pt.size = 0.85, sizes.highlight = 0.85, label.size = 7) + 
 	ggtitle("IgM") +
 	theme(plot.title = element_text(hjust = 0.5) +
 	NoLegend()
 
-p2 = DimPlot(ueRa4.1, cells.highlight = igg, cols.highlight = "brown4", label = TRUE, 
+p2 = DimPlot(uRA4.1, cells.highlight = igg, cols.highlight = "brown4", label = TRUE, 
 	pt.size = 0.85, sizes.highlight = 0.85, label.size = 7) + 
 	ggtitle("IgA") +
 	theme(plot.title = element_text(hjust = 0.5) +
 	NoLegend()
 
-p3 = DimPlot(ueRa4.1, cells.highlight = iga, cols.highlight = "tan1", label = TRUE, 
+p3 = DimPlot(uRA4.1, cells.highlight = iga, cols.highlight = "tan1", label = TRUE, 
 	pt.size = 0.85, sizes.highlight = 0.85, label.size = 7) + 
 	ggtitle("IgA") +
 	theme(plot.title = element_text(hjust = 0.5) +
@@ -52,8 +52,8 @@ grid.arrange(p1, p2, p3, nrow = 1)
 
 #---Determine Proportions of Main Ig Isotypes by Cluster---#
 ## Exclude IgE and IgD (poorly detected)
-tab = table(Idents(ueRA4.1), 
-	ueRA4.1$Isotype)[,c("IGHA1", "IGHA2", "IGHG1", "IGHG2", "IGHG3", "IGHG4", "IGHM")]
+tab = table(Idents(uRA4.1), 
+	uRA4.1$Isotype)[,c("IGHA1", "IGHA2", "IGHG1", "IGHG2", "IGHG3", "IGHG4", "IGHM")]
 
 ## Calculate proportions
 for (i in seq(rownames(tab))) {
@@ -101,7 +101,7 @@ legend(0.95, 0.35, c("IgG1", "IgG2", "IgG3"), cex = 2,
 ###---Examine V- and J-Gene Usage---###
 #######################################
 
-# igh = read.xlsx("data/VDJ_data/ueRA4_VDJ-seq_data.xlsx") # read in relevant VDJ-seq/IgH data for cluster 3.1
+# igh = read.xlsx("data/VDJ_data/uRA4_VDJ-seq_data.xlsx") # read in relevant VDJ-seq/IgH data for cluster 3.1
 # igh$cluster = forcats::as_factor(igh$cluster) # convert to factor
 
 #---Examine V-Gene Usage---#
