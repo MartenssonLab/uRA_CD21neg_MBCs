@@ -1,0 +1,138 @@
+library(Seurat)
+library(dplyr)
+library(DoubletFinder)
+library(ggplot2)
+library(scPred)
+library(xlsx)
+
+########################
+###---Read in Data---###
+########################
+set.seed(1001)
+uRA1.data = Read10X("data/gene_expression/uRA1") # Read in CellRanger output files
+uRA1 = CreateSeuratObject(counts = uRA1.data, project = "uRA1", min.cells = 3, min.features = 200) # Create Seurat object
+
+###########################
+###---Quality Control---###
+###########################
+
+uRA1[["percent.mt"]] = PercentageFeatureSet(uRA1, pattern = "^MT-") # Add % mitochondrial genes expressed as metadata
+uRA1[["percent.ribo"]] = PercentageFeatureSet(uRA1, pattern = "^RP[SL]") # Add % ribosomal genes expressed as metadata
+
+# VlnPlot(uRA1, features = c("nCount_RNA", "nFeature_RNA", "percent.mt", "percent.ribo"), ncol = 2) # Plot relevant quality control metrics
+
+uRA1 = subset(uRA1, subset = nFeature_RNA > 700 & nFeature_RNA < 3000 & percent.mt < 11 & percent.ribo >5) # Filter cells
+
+##################################################
+###---Normalization, Scaling, Gene Filtering---###
+##################################################
+
+#-----Normalize Data-----#
+uRA1 = NormalizeData(uRA1, normalization.method = "LogNormalize", scale.factor = 10000) # Log-normalize the data
+uRA1 = FindVariableFeatures(uRA1, selection.method = "vst") # Identify highly variable genes
+
+#-----Remove Immunoglobulin Genes from Matrix-----#
+uRA1 = uRA1[!grepl("^IG[HKL][VDJ]|^IGH[A][1-2]|^IGH[G][1-4]|^IGHD$|^IGHM$|^IGHE$|^IGKC$|^IGLC[1-7]|^AC233755.1$", rownames(uRA1)),] # See Sundell et al. (2022) for details. 
+
+#---Scaling Data---#
+uRA1 = ScaleData(uRA1, features = rownames(uRA1))
+
+###################################################
+###---Dimensionality Reduction and Clustering---###
+###################################################
+
+#---Principal Component Analysis---#
+uRA1 = RunPCA(object = uRA1, features = VariableFeatures(object = uRA1))
+
+#---Unsupervised Clustering---#
+uRA1 = FindNeighbors(object = uRA1, dims = 1:25) # Construct SNN graph, using 25 PCs
+uRA1 = FindClusters(object = uRA1, resolution = 0.8) # Identify clusters
+
+#-----Running UMAP-----#
+uRA1 = RunUMAP(object = uRA1, dims = 1:25) # Run UMAP
+UMAPPlot(uRA1, label = TRUE) # Plot clusters in UMAP space
+
+############################################
+###---Doublet Prediction and Filtering---###
+############################################
+
+annotations = uRA1@meta.data$seurat_clusters # Define clusters
+homotypic.prop = modelHomotypic(annotations) # Model homotypic proportions
+nExp = round(ncol(uRA1)* 0.031) # Expect 3.1% doublets for 4 000 cells
+nExp_adj = round(nExp*(1-homotypic.prop)) # Adjust expectations
+uRA1 = doubletFinder_v3(uRA1, pN = 0.25, pK = 0.09, nExp = nExp, PCs = 1:25) # Perform doublet prediction
+DF.name = colnames(uRA1@meta.data)[grepl("DF.classification", colnames(uRA1@meta.data))]
+
+# DimPlot(uRA1, group.by = DF.name) + ggtitle("Predicted Doublets") + theme(plot.title = element_text(hjust = 0.5)) # Plot predicted doublets
+# VlnPlot(uRA1, features = "nFeature_RNA", group.by = DF.name, pt.size = 0.1) +
+	ggtitle("Predicted Doublets") + theme(plot.title = element_text(hjust = 0.5)) # Plot number of detected genes in cells
+
+dim(uRA1[,uRA1@meta.data[,DF.name] == "Doublet"])[2] # Number of doublets detected
+uRA1 = uRA1[,uRA1@meta.data[,DF.name] == "Singlet"] # Exclude predicted doublets
+
+################################
+###---Cell Type Prediction---###
+################################
+
+reference = scPred::pbmc_1 # Load reference
+reference = reference %>% 
+	NormalizeData() %>%
+	FindVaraibleFeatures() %>%
+	ScaleData() %>%
+	RunPCA(verbose = FALSE) %>%
+	RunUMAP(dims = 1:25) # Perform all processing steps on the reference data
+# DimPlot(reference, group.by = "cell_type", label = TRUE, repel = TRUE) + 
+#	NoAxes() + 
+#	ggtitle("Reference") + 
+#	theme(plot.title = element_text(hjust=0.5)) # Plot predicted cell types in reference in UMAP space
+
+transfer.anchors = FindTransferAnchors(reference = reference, query = uRA1, dims = 1:25) # Identify transfer anchors
+predictions = TransferData(anchorset = transfer.anchors, refdata = reference$cell_type, dims = 1:25) # Transfer predictions
+uRA1 = AddMetaData(uRA1, metadata = predictions) # Add predictions as metadata
+
+# DimPlot(uRA1, group.by = "predicted.id", label = TRUE, repel = TRUE) +
+#	ggtitle("Predicted Cell Types") + 
+#	theme(plot.title = element_text(hjust = 0.5)) # Plot predicted 
+
+###################################
+###---Remove Irrelevant Cells---###
+###################################
+
+Idents(uRA1) = uRA1$predicted.id # Set predicted cell types as main identities
+vdj_doublets = read.table("data/VDJ_data/uRA1_VDJ-seq_doublets.txt", header = FALSE, row.names = NULL) # Read in list of VDJ-seq doublets
+Idents(object = uRA1, cells = vdj_doublets) = "VDJDubs" # Indicate VDJ-seq data doublets
+uRA1 = subset(uRA1, idents = "B cell") # Only retain predicted B cells, and discard VDJ-seq doublets
+
+#################################
+###---Single-Cell Transform---###
+#################################
+
+uRA1 = SCTransform(object = uRA1, variable.features.n = dim(uRA1)[1]) # Due to high homegenity in the data (all memory B cells), all genes are retained as variable features
+
+#---Principal Component Analysis---#
+uRA1 = RunPCA(object = uRA1, features = VariableFeatures(object = uRA1), assay = "SCT")
+# ElbowPlot(uRA1, reduction = "pca", ndims = 50)
+
+#---Unsupervised Clustering---#
+uRA1 = FindNeighbors(object = uRA1, dims = 1:35)
+uRA1 = FindClusters(object = uRA1, resolution = 0.23)
+
+#---Running UMAP---#
+uRA1 = RunUMAP(object = uRA1, dims = 1:35)
+DimPlot(uRA1, label = T, pt.size = 2, label.size = 7, 
+	cols = c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#F564E3", "#619CFF"))
+
+##########################################
+###---Differentially Expressed Genes---###
+##########################################
+
+uRA1.marks = subset(FindAllMarkers(uRA1, only.pos = FALSE, min.pct = 0.25),
+	subset = p_val_adj < 0.05) # Identify DEGs and retain only significant DEGs 
+pos.marks = subset(uRA1.marks, subset = avg_log2FC > 0.0) # Filter out upregulated DEGs
+neg.marks = subset(uRA1.marks, subset = avg_log2FC < 0.0) # Filter out downregulated DEGs
+
+write.xlsx(pos.marks, "data/uRA1_DEGs.xlsx", sheetName = "Upregulated", col.names = TRUE, row.names = FALSE)
+write.xlsx(neg.marks, "data/uRA1_DEGs.xlsx", sheetName = "Downregulated", col.names = TRUE, row.names = FALSE, append = TRUE)
+
+#---Save Seurat Object---#
+saveRDS(uRA1, file = "data/uRA1_base")
