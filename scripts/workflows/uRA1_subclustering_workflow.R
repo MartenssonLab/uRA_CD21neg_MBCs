@@ -1,0 +1,59 @@
+library(Seurat)
+library(dplyr)
+library(xlsx)
+
+##########################
+###---Sub-Clustering---###
+##########################
+
+uRA1.3 = subset(uRA1, subset = seurat_clusters == "3") # Isolate cells in cluster 3
+
+#---Single-Cell Transform---#
+uRA1.3 = SCTransform(uRA1.3, variable.features.n = dim(uRA1.3)[1], assay = "RNA")
+
+#---Principal Component Analysis---#
+uRA1.3 = RunPCA(uRA1.3, features = VariableFeatures(uRA1.3))
+# ElbowPlot(uRA1.3, reduction = "pca", ndims = 50)
+
+#---Unsupervised Re-Clustering---#
+uRA1.3 = FindNeighbors(uRA1.3, dims = 1:40)
+uRA1.3 = FindClusters(uRA1.3, resolution = 0.95)
+
+#---Running UMAP---#
+uRA1.3 = RunUMAP(uRA1.3, dims = 1:40)
+# UMAPPlot(uRA1.3, label = TRUE)
+
+#---Rename Clusters Accordingly---#
+c3.0 = WhichCells(uRA1.3, idents = "0")
+c3.1 = WhichCells(uRA1.3, idents = "1")
+
+Idents(uRA1.3, cells = c3.0) = "3.0"
+Idents(uRA1.3, cells = c3.1) = "3.1"
+
+########################################
+###---Differential Gene Expression---###
+########################################
+
+uRA1.3.marks = subset(FindAllMarkers(uRA1.3, only.pos = FALSE, min.pct = 0.25), 
+	subset = p_val_adj < 0.05)
+pos.marks = subset(uRA1.3.marks, subset = avg_log2FC > 0.0)
+neg.marks = subset(uRA1.3.marks, subset = avg_log2FC < 0.0)
+
+write.xlsx(pos.marks %>% group_by(cluster) %>% top_n(-10, p_val_adj), 
+	"reports/uRA1_C3_subs.xlsx", sheetName = "Top10_Up", col.names = TRUE, row.names = FALSE)
+write.xlsx(neg.marks %>% group_by(cluster) %>% top_n(-10, p_val_adj), )
+	"reports/uRA1_C3_subs.xlsx", sheetName = "Top10_Down", col.names = TRUE, row.names = FALSE, append = TRUE)
+
+saveRDS(uRA1.3, file = "data/uRA1_C3_subs") # Save sub-cluster object
+
+#########################################
+###---Map Sub-Clusters to Base Data---###
+#########################################
+
+uRA1.1 = uRA1
+Idents(uRA1.1, cells = c3.0) = "3.0"
+Idents(uRA1.1, cells = c3.1) = "3.1"
+Idents(uRA1.1) = factor(Idents(uRA1.1), 
+	levels = c("0", "1", "2", "3.0", "3.1", "4", "5")
+
+saveRDS(uRA1.1, file = "data/uRA1_w_subs") # Save Seurat object
