@@ -5,19 +5,19 @@ The organization of this directory should look like this:
 ```bash
 gene_expression
 ├── README.md
-├── RA1
+├── uRA1
 │   ├── barcodes.tsv
 │   ├── genes.tsv
 │   └── matrix.mtx
-├── RA2
+├── uRA2
 │   ├── barcodes.tsv
 │   ├── genes.tsv
 │   └── matrix.mtx
-├── RA3
+├── uRA3
 │   ├── barcodes.tsv
 │   ├── genes.tsv
 │   └── matrix.mtx
-└── RA4
+└── uRA4
     ├── barcodes.tsv
     ├── genes.tsv
     └── matrix.mtx
