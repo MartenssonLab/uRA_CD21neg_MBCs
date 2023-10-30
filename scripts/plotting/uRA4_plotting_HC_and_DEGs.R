@@ -9,13 +9,13 @@ library(plotrix)
 #######################
 ###---Basic Plots---###
 #######################
-ueRA4 = readRDS("data/ueRA4_base")
+uRA4 = readRDS("data/uRA4_base")
 
-DimPlot(ueRA4, label = TRUE, pt.size = 2, label.size = 7, reduction = "umap",
+DimPlot(uRA4, label = TRUE, pt.size = 2, label.size = 7, reduction = "umap",
 	cols = c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#F564E3")) # Plot clusters in UMAP space
 
 #---Pie Chart of Cell Numbers---#
-table(Idents(ueRA4)) # Number of cells per cluster
+table(Idents(uRA4)) # Number of cells per cluster
 
 slices = c(889, 827, 713, 443, 37)
 pie(slices, labels = NA, col = c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#F564E3"), 
@@ -39,7 +39,7 @@ legend(-0.9, 1.15, mylab[myorder], cex = 1.5,
 ###---Hierarchical Clustering---###
 ###################################
 
-tree = BuildClusterTree(ueRA4, assay = "SCT")
+tree = BuildClusterTree(uRA4, assay = "SCT")
 myphytree = Tool(tree, slot = "BuildClusterTree")
 ggtree(myphytree) + 
 	geom_tiplab() +
@@ -51,15 +51,15 @@ ggtree(myphytree) +
 ###---Differentially Expressed Genes---###
 ##########################################
 
-degs = read.xlsx("data/ueRA4_DEGs.xlsx", sheetName = "Upregulated", col.names = TRUE, row.names = FALSE) # Read in DEGs
+degs = read.xlsx("data/uRA4_DEGs.xlsx", sheetName = "Upregulated", col.names = TRUE, row.names = FALSE) # Read in DEGs
 
-DoHeatmap(ueRA4, features = degs$gene, raster = FALSE, 
+DoHeatmap(uRA4, features = degs$gene, raster = FALSE, 
 	group.colors = c("#F8766D", "#B79F00", "#00BA38", "#00BFC4", "#F564E3")) + 
 	theme(axis.text.y = element_blank())
 
 #---Pie Chart---#
 # Identify number of significantly upregulated DEGs by cluster
-for (i in levels(ueRA4)) {
+for (i in levels(uRA4)) {
   d = nrow(subset(degs, subset = cluster == i))
   print(paste("Cluster", i, sep = ""))
   print(d)
