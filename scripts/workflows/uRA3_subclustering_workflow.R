@@ -1,0 +1,60 @@
+library((Seurat)
+library(dplyr)
+library(xlsx)
+
+##########################
+###---Sub-Clustering---###
+##########################
+
+uRA3.3 = subset(uRA3, subset = seurat_clusters == "3") # Isolate cells in cluster 3
+
+#---Single-Cell Transform---#
+uRA3.3 = SCTransform(uRA3.3, variable.features.n = dim(uRA3.3)[1], assay = "RNA")
+
+#---Principal Component Analysis---#
+uRA3.3 = RunPCA(uRA3.3, features = VariableFeatures(uRA3.3))
+# ElbowPlot(uRA3.3, reduction = "pca", ndims = 50)
+
+#---Unsupervised Re-Clustering---#
+uRA3.3 = FindNeighbors(uRA3.3, dims = 1:40)
+uRA3.3 = FindClusters(uRA3.3, resolution = 0.95)
+
+#---Running UMAP---#
+uRA3.3 = RunUMAP(uRA3.3, dims = 1:40)
+# UMAPPlot(uRA3.3, label = TRUE)
+
+#---Rename Clusters Accordingly---#
+c3.0 = WhichCells(uRA3.3, idents = "0")
+c3.1 = WhichCells(uRA3.3, idents = "1")
+c3.2 = WhichCells(uRA3.3, idents = "2")
+
+Idents(uRA3.3, cells = c3.0) = "3.0"
+Idents(uRA3.3, cells = c3.1) = "3.1"
+Idents(uRA3.3, cells = c3.2) = "3.2"
+
+########################################
+###---Differential Gene Expression---###
+########################################
+
+uRA3.3.marks = subset(FindAllMarkers(uRA3.3, only.pos = FALSE, min.pct = 0.25), 
+	subset = p_val_adj < 0.05)
+pos.marks = subset(uRA3.3.marks, subset = avg_log2FC > 0.0)
+neg.marks = subset(uRA3.3.marks, subset = avg_log2FC < 0.0)
+
+write.xlsx(pos.marks %>% group_by(cluster) %>% top_n(-10, p_val_adj), 
+	"reports/uRA3_C3_subs.xlsx", sheetName = "Top10_Up", col.names = TRUE, row.names = FALSE)
+write.xlsx(neg.marks %>% group_by(cluster) %>% top_n(-10, p_val_adj), )
+	"reports/uRA3_C3_subs.xlsx", sheetName = "Top10_Down", col.names = TRUE, row.names = FALSE, append = TRUE)
+
+saveRDS(uRA3.3, file = "data/uRA3_C3_subs") # Save sub-cluster object
+
+#########################################
+###---Map Sub-Clusters to Base Data---###
+#########################################
+
+uRA3.1 = uRA3
+Idents(uRA3.1, cells = c3.0) = "3.0"
+Idents(uRA3.1, cells = c3.1) = "3.1"
+Idents(uRA3.1, cells = c3.2) = "3.2"
+Idents(uRA3.1) = factor(Idents(uRA3.1), 
+	levels = c("0", "1", "2", "3.0", "3.1", "3.2", "4")
