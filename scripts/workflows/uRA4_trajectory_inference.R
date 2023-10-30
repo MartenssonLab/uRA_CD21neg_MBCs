@@ -5,7 +5,7 @@ library(SeuratWrappers)
 library(gridExtra)
 
 # Read in and process data
-uRA4.5 = readRDS("data/uRA4.5.rds")
+uRA4.5 = readRDS("data/uRA4_w_subs.rds")
 
 ## Extract cluster information
 uRA4_traj = as.cell_data_set(uRA4.5) # Convert to cell dataset
