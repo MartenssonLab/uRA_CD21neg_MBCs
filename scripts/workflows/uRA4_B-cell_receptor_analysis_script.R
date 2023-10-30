@@ -1,0 +1,222 @@
+library(alakazam)
+library(data.table)
+library(dowser)
+library(scoper)
+library(shazam)
+library(dplyr) # v. 1.0.5 (newer versions do not work with ggtree)
+library(ggpubr)
+library(Seurat)
+library(xlsx)
+library(ggpubr)
+set.seed(1001)
+
+# Read in IGBLAST-processed data
+uRA4_bcr = readChangeoDb("uRA4_filtered_contig_igblast-pass.tsv")
+
+# Filter data
+## Remove unproductive transcripts
+uRA4_bcr = uRA4_bcr %>% filter(productive)
+
+## Remove cells with multiple heavy chains
+multi_heavy = table(filter(uRA4_bcr, locus == "IGH")$cell_iid)
+multi_heavy_cell = names(multi_heavy)[multi_heavy >1]
+uRA4_bcr = filter(uRA4_bcr, !cell_id %in% multi_heavy_cells)
+
+## Remove cells with no annotated C-gene
+uRA4_bcr = uRA4_bcr[complete.cases(uRA4_bcr$c_call),]
+
+# Split cells by heavy and light chains
+heavy_cells = filter(uRA4_bcr, locus == "IGH")$cell_id
+light_cells = filter(uRA4_bcr, locus == "IGK" | locus == "IGL")$cell_id
+no_heavy_cells = light_cells[which(!light_cells %in% heavy_cells)]
+
+uRA4_bcr = filter(uRA4_bcr, !cell_id %in% no_heavy_cells)
+
+# Clonotype analysis (heavy chains)
+## Calculate nearest-neighbor Hamming distances
+dist_nearest = distToNearest(filter(uRA4_bcr, locus = "IGH"), nproc = 1)
+
+ggplot(subset(dist_nearest, !is.na(dist_nearest)), 
+       aes(x = dist_nearest)) + 
+  theme_bw() + 
+  xlab("Hamming distance") + 
+  ylab("Count") + 
+  scale_x_continuous(breaks = seq(0, 1, 0.1)) + 
+  geom_histogram(color = "white", binwidth = 0.02) + 
+  theme(axis.title = element_text(size = 18)) # Plot distance distributions
+
+## Cluster clones based on a Hamming distance threshold of 0.15
+results = hierarchicalClones(uRA4_bcr, cell_id = "cell_id", 
+                             threshold = 0.15, 
+                             only_heavy = F, 
+                             split_light = T, 
+                             summarize_clones = F)
+
+# Calculate somatic hypermutation (SHM) frequency 
+## Create germlines
+references = readIMGT(dir = "../germlines/imgt/human/vdj") # Read in reference
+
+heavy = createGermlines(filter(results, locus == "IGH"), references)
+kappa = createGermlines(filter(results, locus == "IGK"), references)
+lambda = createGermlines(filter(results, locus == "IGL"), references)
+
+## Calculate SHM frequency in V-genes
+### In heavy chains
+heavy_data = observedMutations(heavy, 
+                               sequenceColumn = "sequence_alignment", 
+                               germlineColumn = "germline_alignment_d_mask", 
+                               regionDefinition = IMGT_V, 
+                               frequency = T, 
+                               combine = T, 
+                               nproc = 1)
+
+heavy_mut_freq = heavy_data %>%
+  group_by(clone_id) %>%
+  summarise(median_mut_freq = median(mu_freq)) # Calculate median SHM frequency of clones
+
+### In kappa light chains
+kappa_data = observedMutations(kappa, 
+                               sequenceColumn = "sequence_alignment", 
+                               germlineColumn = "germline_alignment_d_mask", 
+                               regionDefinition = IMGT_V, 
+                               frequency = T, 
+                               combine = T, 
+                               nproc = 1)
+
+kappa_mut_freq = kappa_data %>%
+  group_by(clone_id) %>%
+  summarise(median_mut_freq = median(mu_freq)) # Calculate median SHM frequency of clones
+
+### In lambda light chains
+lambda_data = observedMutations(lambda, 
+                               sequenceColumn = "sequence_alignment", 
+                               germlineColumn = "germline_alignment_d_mask", 
+                               regionDefinition = IMGT_V, 
+                               frequency = T, 
+                               combine = T, 
+                               nproc = 1)
+
+lambda_mut_freq = lambda_data %>%
+  group_by(clone_id) %>%
+  summarise(median_mut_freq = median(mu_freq)) # Calculate median SHM frequency of clones
+
+# Construct maximum likelihood clonal/lineage trees
+## Define colors
+custom_palette = c(
+  "IGHM" = "cornflowerblue", 
+  "IGHD"    ="wheat2",
+  "IGHG3"   ="sienna2",
+  "IGHG1"   ="brown4",
+  "IGHA1"   ="tan1",
+  "IGHG2"   ="indianred3",
+  "IGHG4"   ="sienna4",
+  "IGHE"    ="lightgreen",
+  "IGHA2"   ="tan3",
+  "Germline"="lightgrey")
+
+## Heavy chains
+heavy_clones = formatClones(heavy_data, 
+                            traits = "c_call", 
+                            minseq = 2, 
+                            locus = "IGH")
+
+heavy_trees = getTrees(heavy_clones, 
+                       build = "pml", 
+                       nproc = 1)
+
+plotTrees(heavy_trees, 
+          tips = "c_call", 
+          tipsize = 4, 
+          tip_palette = custom_palette)
+
+## Kappa light chains
+kappa_clones = formatClones(kappa_data, 
+                             traits = "c_call", 
+                             minseq = 2, 
+                             locus = "IGK")
+
+kappa_trees = getTrees(kappa_clones, 
+                        build = "pml", 
+                        nproc = 1)
+
+plotTrees(kappa_trees, 
+          tips = "c_call", 
+          tipsize = 4, 
+          tip_palette = custom_palette)
+
+## Lambda light chains
+lambda_clones = formatClones(lambda_data, 
+                            traits = "c_call", 
+                            minseq = 2, 
+                            locus = "IGL")
+
+lambda_trees = getTrees(lambda_clones, 
+                       build = "pml", 
+                       nproc = 1)
+
+plotTrees(lambda_trees, 
+          tips = "c_call", 
+          tipsize = 4, 
+          tip_palette = custom_palette)
+
+# Add Seurat (sub)cluster information to BCR data
+uRA4.1 = readRDS("data/uRA4_w_subs.rds")
+
+## Select columns from Seurat object
+uRA4_data = data.frame(cell_id = Cells(uRA4.1), 
+                       umap_1 = uRA4.1@reductions$umap@cell.embeddings[,1], 
+                       umap_2 = uRA4.1@reductions$umap@cell.embeddings[,2], 
+                       clusters = as.character(Idents(uRA4.1)))
+
+## Integrate (heavy chain) BCR data with Seurat data
+uRA4_heavy = left_join(heavy_data, 
+                            uRA4_data, 
+                            by = "cell_id")
+uRA4_heavy = filter(uRA4_heavy, !is.na(clusters)) # Only keep matching cells
+
+## Integrate (kappa light chain) BCR data with Seurat data
+uRA4_kappa = left_join(kappa_data, 
+                       uRA4_data, 
+                       by = "cell_id")
+uRA4_kappa = filter(uRA4_kappa, !is.na(clusters)) # Only keep matching cells
+
+## Integrate (lambda light chain) BCR data with Seurat data
+uRA4_lambda = left_join(lambda_data, 
+                       uRA4_data, 
+                       by = "cell_id")
+uRA4_lambda = filter(uRA4_lambda, !is.na(clusters)) # Only keep matching cells
+
+# Plot SHM frequency by cluster
+## Define function
+KG_shm_boxplot = function(bcr_object, 
+                          xlab = "Cluster", 
+                          ylab = "SHM frequency", 
+                          legend = FALSE){
+  ggplot(bcr_gex_object, aes(x = cluster, y = mu_freq, fill = cluster)) + 
+    stat_boxplot(geom = 'errorbar', width = 0.5) +
+    geom_boxplot() + 
+    theme_classic() + 
+    xlab(xlab) + 
+    ylab(ylab) + 
+    labs(fill = clusters) + 
+    theme(axis.title = element_text(size = 14), 
+          axis.text = element_text(size = 12)) + 
+    if(legend == FALSE){
+      NoLegend()
+    } 
+}
+
+KG_shm_boxplot(uRA4_heavy) # Plot SHM frequency in heavy chain V-genes by cluster
+KG_shm_boxplot(uRA4_kappa) # Plot SHM frequency in kappa light chain V-genes by cluster
+KG_shm_boxplot(uRA4_lambda) # Plot SHM frequency in lambda light chain V-genes by cluster
+
+# Compare SHM frequency in heavy chain V-genes between clusters
+## ANOVA
+anova_res = aov(mu_data ~ clusters, data = uRA4_heavy)
+summary(anova_res)
+
+## Tukey post hoc test
+tukey_test = TukeyHSD(anova_res)
+print(tukey_test)
+plot(tukey_test, las = 1)
+
