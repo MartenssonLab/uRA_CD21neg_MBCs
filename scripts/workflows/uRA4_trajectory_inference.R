@@ -5,10 +5,10 @@ library(SeuratWrappers)
 library(gridExtra)
 
 # Read in and process data
-uRA4.5 = readRDS("data/uRA4_w_subs.rds")
+uRA4.1 = readRDS("data/uRA4_w_subs.rds")
 
 ## Extract cluster information
-uRA4_traj = as.cell_data_set(uRA4.5) # Convert to cell dataset
+uRA4_traj = as.cell_data_set(uRA4.1) # Convert to cell dataset
 uRA4_traj = cluster_cells(uRA4_traj) # Create initial clustering
 plot_cells(uRA4_traj, show_trajectory_graph = F, cell_size = 0.75, 
            color_cells_by = "cluster")
@@ -25,12 +25,12 @@ recreate.partition = as.factor(recreate.partition)
 uRA4_traj@clusters$UMAP$UMAP$clusters = list_cluster
 
 ## Assign cluster information
-list_cluster = uRA4.5@active.ident
+list_cluster = uRA4.1@active.ident
 uRA4_traj@reductions$umap@cell.embeddings
 
 ## Assign UMAP coordinate cell embeddings
 uRA4_traj@int_colData@listData$reducedDims$UMAP = 
-  uRA4.5@reductions$umap@cell.embeddings
+  uRA4.1@reductions$umap@cell.embeddings
 
 # Learn trajectory graph
 uRA4_traj = learn_graph(uRA4_traj, use_partition = T)
