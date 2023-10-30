@@ -3,15 +3,13 @@ library(data.table)
 library(dowser)
 library(scoper)
 library(shazam)
-library(dplyr) # v. 1.0.5 (newer versions do not work with ggtree)
+library(dplyr) 
 library(ggpubr)
 library(Seurat)
-library(xlsx)
-library(ggpubr)
 set.seed(1001)
 
 # Read in IGBLAST-processed data
-uRA4_bcr = readChangeoDb("uRA4_filtered_contig_igblast-pass.tsv")
+uRA4_bcr = readChangeoDb("data/uRA4_filtered_contig_igblast-pass.tsv")
 
 # Filter data
 ## Remove unproductive transcripts
