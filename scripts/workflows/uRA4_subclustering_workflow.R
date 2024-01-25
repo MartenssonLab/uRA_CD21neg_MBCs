@@ -63,8 +63,18 @@ Idents(uRA4.1) = factor(Idents(uRA4.1),
 ###---Cluster 3.1 Vs. 3.0---###
 ###############################
 
-marks = subset(FindMarkers(uRA4.1, ident.1 = "3.1", ident.2 = "3.0", min.pct = 0.25, only.pos = TRUE), 
+DN_sign = subset(FindMarkers(uRA4.1, ident.1 = "3.1", ident.2 = "3.0", min.pct = 0.25, only.pos = TRUE), 
 	subset = p_val_adj <0.05)
-write.xlsx(marks, file = "reports/uRA4_3.1_vs_3.0_DEGs.xlsx", sheetName = "DEGs", col.names = TRUE, row.names = FALSE)
+write.xlsx(DN_sign, file = "reports/uRA4_3.1_vs_3.0_DEGs.xlsx", sheetName = "DEGs", col.names = TRUE, row.names = FALSE)
+
+saveRDS(uRA4.1, file = "data/uRA4_w_subs") # Save Seurat object
+
+###############################
+###---Cluster 3.2 Vs. 3.0---###
+###############################
+
+CD27_sign = subset(FindMarkers(uRA4.1, ident.1 = "3.1", ident.2 = "3.0", min.pct = 0.25, only.pos = TRUE), 
+	subset = p_val_adj <0.05)
+write.xlsx(CD27_sign, file = "reports/uRA4_3.1_vs_3.0_DEGs.xlsx", sheetName = "DEGs", col.names = TRUE, row.names = FALSE)
 
 saveRDS(uRA4.1, file = "data/uRA4_w_subs") # Save Seurat object
