@@ -1,3 +1,5 @@
+# Packages used
+```{r}
 library(alakazam)
 library(data.table)
 library(dowser)
@@ -7,20 +9,22 @@ library(dplyr)
 library(ggpubr)
 library(Seurat)
 set.seed(1001)
+```
 
+# Read and Filter Data
+```{r}
 # Read in IGBLAST-processed data
 uRA4_bcr = readChangeoDb("data/uRA4_filtered_contig_igblast-pass.tsv")
 
-# Filter data
-## Remove unproductive transcripts
+# Remove unproductive transcripts
 uRA4_bcr = uRA4_bcr %>% filter(productive)
 
-## Remove cells with multiple heavy chains
+# Remove cells with multiple heavy chains
 multi_heavy = table(filter(uRA4_bcr, locus == "IGH")$cell_iid)
 multi_heavy_cell = names(multi_heavy)[multi_heavy >1]
 uRA4_bcr = filter(uRA4_bcr, !cell_id %in% multi_heavy_cells)
 
-## Remove cells with no annotated C-gene
+# Remove cells with no annotated C-gene
 uRA4_bcr = uRA4_bcr[complete.cases(uRA4_bcr$c_call),]
 
 # Split cells by heavy and light chains
@@ -29,9 +33,11 @@ light_cells = filter(uRA4_bcr, locus == "IGK" | locus == "IGL")$cell_id
 no_heavy_cells = light_cells[which(!light_cells %in% heavy_cells)]
 
 uRA4_bcr = filter(uRA4_bcr, !cell_id %in% no_heavy_cells)
+```
 
-# Clonotype analysis (heavy chains)
-## Calculate nearest-neighbor Hamming distances
+# Clonotype Analysis
+```{r}
+# Calculate nearest-neighbor Hamming distances
 dist_nearest = distToNearest(filter(uRA4_bcr, locus = "IGH"), nproc = 1)
 
 ggplot(subset(dist_nearest, !is.na(dist_nearest)), 
@@ -43,7 +49,8 @@ ggplot(subset(dist_nearest, !is.na(dist_nearest)),
   geom_histogram(color = "white", binwidth = 0.02) + 
   theme(axis.title = element_text(size = 18)) # Plot distance distributions
 
-## Cluster clones based on a Hamming distance threshold of 0.15
+# Cluster clones based on a Hamming distance threshold of 0.15
+## 0.15 corresponds to an identitiy threshold of 85%, commonly used in BCR analyses
 results = hierarchicalClones(uRA4_bcr, cell_id = "cell_id", 
                              threshold = 0.15, 
                              only_heavy = F, 
@@ -97,8 +104,10 @@ lambda_data = observedMutations(lambda,
 lambda_mut_freq = lambda_data %>%
   group_by(clone_id) %>%
   summarise(median_mut_freq = median(mu_freq)) # Calculate median SHM frequency of clones
+```
 
 # Construct maximum likelihood clonal/lineage trees
+```{r}
 ## Define colors
 custom_palette = c(
   "IGHM" = "cornflowerblue", 
@@ -156,7 +165,10 @@ plotTrees(lambda_trees,
           tips = "c_call", 
           tipsize = 4, 
           tip_palette = custom_palette)
+```
 
+# Integrate with Seurat Data
+```{r}
 # Add Seurat (sub)cluster information to BCR data
 uRA4.1 = readRDS("data/uRA4_w_subs.rds")
 
@@ -217,4 +229,4 @@ summary(anova_res)
 tukey_test = TukeyHSD(anova_res)
 print(tukey_test)
 plot(tukey_test, las = 1)
-
+```
