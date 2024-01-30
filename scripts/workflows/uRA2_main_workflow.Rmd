@@ -9,6 +9,7 @@ library(xlsx)
 ```
 
 # Processing Data and QC
+```{r}
 # Read in data
 set.seed(1001)
 uRA2.data = Read10X("data/gene_expression/uRA2") # Read in CellRanger output files
