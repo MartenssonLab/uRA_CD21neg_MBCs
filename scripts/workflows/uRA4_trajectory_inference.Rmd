@@ -1,11 +1,15 @@
-
+# Pacakges used
+```{r}
 library(Seurat)
 library(ggplot2)
 library(monocle3)
 library(SeuratWrappers)
 library(gridExtra)
+```
 
-# Read in and process data
+# Trajectory Inference
+```{r}
+# Read in and prepare data
 uRA4.1 = readRDS("data/uRA4_w_subs.rds")
 uRA4_traj = as.cell_data_set(uRA4.1) # Convert to cell dataset
 
@@ -44,3 +48,4 @@ plot_cells(uRA4_traj,
            cell_size = 2, 
            trajectory_graph_segment_size = 1.5, 
            trajectory_graph_color = "black") # Plot trajectory with cells colored by pseudotime
+```
