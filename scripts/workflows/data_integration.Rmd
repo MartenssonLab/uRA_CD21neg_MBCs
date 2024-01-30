@@ -13,10 +13,10 @@ library(scales)
 # Integrate uRA datasets 1 - 4
 ```{r}
 # Read in processed data
-uRA1.1 = readRDS("/data/uRA1_w_subs.rds")
-uRA2.1 = readRDS("/data/uRA2_w_subs.rds")
-uRA3.1 = readRDS("/data/uRA3_w_subs.rds")
-uRA4.1 = readRDS("/data/uRA4_w_subs.rds")
+uRA1.1 = readRDS("data/uRA1_w_subs.rds")
+uRA2.1 = readRDS("data/uRA2_w_subs.rds")
+uRA3.1 = readRDS("data/uRA3_w_subs.rds")
+uRA4.1 = readRDS("data/uRA4_w_subs.rds")
 
 uRA_files = list(uRA1.1, uRA2.1, uRA3.1, uRA4.1)
 
