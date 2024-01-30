@@ -5,7 +5,7 @@ library(dplyr)
 library(xlsx)
 ```
 
-# Sub-Clustering
+# Subclustering
 ```{r}
 uRA4.3 = subset(uRA4, subset = seurat_clusters == "3") # Isolate cells in cluster 3
 
