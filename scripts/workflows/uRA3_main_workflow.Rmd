@@ -66,7 +66,7 @@ uRA3 = uRA3[,uRA3@meta.data[,DF.name] == "Singlet"] # Exclude predicted doublets
 reference = scPred::pbmc_1 # Load reference
 reference = reference %>% 
 	NormalizeData() %>%
-	FindVaraibleFeatures() %>%
+	FindVariableFeatures() %>%
 	ScaleData() %>%
 	RunPCA(verbose = FALSE) %>%
 	RunUMAP(dims = 1:25) # Perform all processing steps on the reference data
