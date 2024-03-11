@@ -33,7 +33,6 @@ uRA_int = PrepSCTIntegration(uRA_files,
 anchors = FindIntegrationAnchors(uRA_int, 
                                  dims = 1:35, 
                                  reduction = "cca",
-                                 normalization.method = "SCT, 
                                  anchor.features = int_features)
 
 ## Integrate the datasets
