@@ -30,9 +30,10 @@ uRA_int = PrepSCTIntegration(uRA_files,
                              anchor.features = int_features)
 
 ## Identify integration anchors
-anchors = FindIntegrationAnchors(uRA_files, 
+anchors = FindIntegrationAnchors(uRA_int, 
                                  dims = 1:35, 
-                                 reduction = "pca", 
+                                 reduction = "cca",
+                                 normalization.method = "SCT, 
                                  anchor.features = int_features)
 
 ## Integrate the datasets
@@ -45,6 +46,7 @@ uRA_int = ScaleData(uRA_int)
 
 # Cluster integrated data
 uRA_int = uRA_int %>%
+  RunPCA() %>%
   RunUMAP(dims = 1:35) %>%
   FindNeighbors(dims = 1:35) %>%
   FindClusters(resolution = 0.6)
